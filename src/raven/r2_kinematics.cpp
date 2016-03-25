@@ -714,16 +714,16 @@ int apply_joint_limits(double *Js, double *Js_sat){
 		std::cout<<"z max limit reached  = "<<Js_sat[2]<<std::endl;
 	}
 
-	if (Js[3] <= -150.0 DEG2RAD)
+	if (Js[3] <= DOF_types[TOOL_ROT].min_limit)
 	{
-		Js_sat[3] = -150.0 DEG2RAD;
+		Js_sat[3] = DOF_types[TOOL_ROT].min_limit;
 		limited = 1;
 		std::cout<<"rot min limit reached  = "<<Js_sat[3]<<std::endl;
 	}
 
-	else if(Js[3] >= 150.0 DEG2RAD)
+	else if(Js[3] >= DOF_types[TOOL_ROT].max_limit)
 	{
-		Js_sat[3] = 150.0 DEG2RAD;
+		Js_sat[3] = DOF_types[TOOL_ROT].max_limit;
 		limited = 1;
 		std::cout<<"rot max limit reached  = "<<Js_sat[3]<<std::endl;
 	}

@@ -317,7 +317,15 @@ void initDOFs(struct device *device0)
 					default:
 						_dof->tau_per_amp = -1 * (float)(T_PER_AMP_SMALL_MOTOR  * GEAR_BOX_TR_SMALL_MOTOR);  // Amps to torque
 						break;
-                }
+		}
+
+#ifdef OPPOSE_GRIP
+		if (j == GRASP1)
+		{
+			_dof->tau_per_amp *= -1; //swap the torque sign for the first grasper
+			log_msg("grasp1 tau_per_amp swapped");
+		}
+#endif
             }
 
             //Set encoder offset

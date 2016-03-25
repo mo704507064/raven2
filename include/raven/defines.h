@@ -38,22 +38,22 @@
 
 //~~~~~~~~~ tool adapter definition ~~~~~~~~~~~~~~~~
 
-#define RAVEN_TOOLS
-//#define DV_ADAPTER			1
+//#define RAVEN_TOOLS
+#define DV_ADAPTER			1
 //#define RICKS_TOOLS     //skips tool initialization //not supported since switch to tools.h?
-
-
+#define SCISSOR_RIGHT
+#define OPPOSE_GRIP
 
 //~~~~~~~~~ USB Board definition ~~~~~~~~~~~~~~~~~~~
 // Two arm identification
 // Change this to match device ID in /dev/brl_usbXX
-#define GREEN_ARM_SERIAL 37
-#define GOLD_ARM_SERIAL  67 
+#define GREEN_ARM_SERIAL 24
+#define GOLD_ARM_SERIAL  10
 
 
 //~~~~~~~~ Other settings, experts only ~~~~~~~~~~~~
-//#define NO_LPF    // This setting short circuits the Low Pass Filter in state_estimate.cpp 
-#define OMNI_GAIN  3  // Get a little more oomph out of the omni grasping button - sets a gain in local__io.cpp
+#define NO_LPF    // This setting short circuits the Low Pass Filter in state_estimate.cpp 
+//#define OMNI_GAIN  3  // Get a little more oomph out of the omni grasping button - sets a gain in local__io.cpp
 
 
 //~~~~~~~~ Other defines ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -264,6 +264,8 @@
 #define GRASP2_MAX_DAC     4500  // up from 2000 on 10/10/2013 //up from 2500 on 2/28/14
 
 #else
+
+//everything but square RAVEN
 #define MAX_INST_DAC 20000 //32000
 
 // Doubled position joints 4-Apr-2013 by HK
@@ -271,9 +273,9 @@
 #define ELBOW_MAX_DAC      5000   //  ""
 #define Z_INS_MAX_DAC      4000   //  1000 moves but doesn't overcome friction in tool joints
 #define TOOL_ROT_MAX_DAC   3000  // 10000   These are set really low for safety sake
-#define WRIST_MAX_DAC      1900  // 20000
-#define GRASP1_MAX_DAC     2400  // 15000
-#define GRASP2_MAX_DAC     2400
+#define WRIST_MAX_DAC      3000  // 20000
+#define GRASP1_MAX_DAC     3800  // 15000
+#define GRASP2_MAX_DAC     3800
 
 
 #endif

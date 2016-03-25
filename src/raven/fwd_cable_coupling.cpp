@@ -135,10 +135,15 @@ void fwdMechCableCoupling(struct mechanism *mech)
 		break;
     }
 
+	int sgn_6 = sgn;
+#ifdef OPPOSE_GRIP
+	sgn_6 *= -1;
+#endif
+
     float tool_coupling = mech->mech_tool.wrist_coupling;
     th3 = (1.0/tr3) * (m3 - sgn*m4/GB_RATIO);
     th5 = (1.0/tr5) * (m5 - sgn*m4/GB_RATIO);
-    th6 = (1.0/tr6) * (m6 - sgn*m4/GB_RATIO) - th5*tool_coupling;
+    th6 = (1.0/tr6) * (m6 - sgn_6*m4/GB_RATIO) - th5*tool_coupling;
     th7 = (1.0/tr7) * (m7 - sgn*m4/GB_RATIO) + th5*tool_coupling;
 
 
@@ -247,7 +252,7 @@ void fwdMechTorqueCoupling(struct mechanism *mech)
 	th2_dot = (1.0/tr2) * m2_dot;
 	d4_dot  = (1.0/tr4) * m4_dot;
 
-
+// TODO:: why is only the RAVEN tool referenced in this?
 	// Tool degrees of freedom ===========================================
 	if (mech->tool_type == TOOL_GRASPER_10MM)
 	{
