@@ -103,6 +103,7 @@ void initRobotData(struct device *device0, int runlevel, struct param_pass *curr
     case 0:
         {
             currParams->sublevel = 1;     // Goto sublevel 1 to allow initial jpos_d setup by inv_kin.
+            break;
         }
     case 1:     // Initialization off all joint variables
         if (initialized)     //If already initialized do nothing

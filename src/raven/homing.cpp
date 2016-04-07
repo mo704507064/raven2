@@ -376,6 +376,7 @@ void homing(struct DOF* _joint)
         case jstate_homing1:
             start_trajectory( _joint , DOF_types[_joint->type].home_position, 2.5 );
             _joint->state = jstate_homing2;
+            break;
 
         case jstate_homing2:
             // Move to start position
@@ -458,6 +459,7 @@ void homing(struct DOF* _joint, tool a_tool)
         case jstate_homing1:
             start_trajectory( _joint , DOF_types[_joint->type].home_position, 2.5 );
             _joint->state = jstate_homing2;
+            break;
 
         case jstate_homing2:
             // Move to start position
@@ -506,8 +508,8 @@ const int homing_max_dac[8] = {2500,  //shoulder
                             0,
                             1900,  //tool_rot  //rasised from 1400 alewis 3/4/14
                             1900,  //wrist
-                            1700,  //grasp1 decreased from 1900
-                            1700};  // grasp2 decreased from 1900
+                            1900,  //grasp1 decreased from 1900
+                            1900};  // grasp2 decreased from 1900
 #endif
 #endif
 

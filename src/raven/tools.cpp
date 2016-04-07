@@ -44,18 +44,18 @@ void tool::set_limits() {
 
 		wrist_max_angle = 115 DEG2RAD;
 		wrist_min_angle = -115 DEG2RAD;
-		wrist_max_limit = 75 DEG2RAD;
-		wrist_min_limit = -75 DEG2RAD;
+		wrist_max_limit = 70 DEG2RAD;
+		wrist_min_limit = -70 DEG2RAD;
 
 		grasp1_max_angle = 120 DEG2RAD;
 		grasp1_min_angle = -120 DEG2RAD;
-		grasp1_max_limit = 85 DEG2RAD;
-		grasp1_min_limit = -85 DEG2RAD;
+		grasp1_max_limit = 105 DEG2RAD;
+		grasp1_min_limit = -105 DEG2RAD;
 
 		grasp2_max_angle = 120 DEG2RAD;
 		grasp2_min_angle = -120 DEG2RAD;
-		grasp2_max_limit = 85 DEG2RAD;
-		grasp2_min_limit = -85 DEG2RAD;
+		grasp2_max_limit = 105 DEG2RAD;
+		grasp2_min_limit = -105 DEG2RAD;
 		break;
 
 	case r_sq_grasper:

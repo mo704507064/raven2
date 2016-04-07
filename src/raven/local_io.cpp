@@ -191,12 +191,12 @@ void teleopIntoDS1(struct u_struct *us_t)
 
 #endif
 
-	
+
         const int graspmax = (M_PI/2 * 1000);
-        int graspmin = (-20.0 * 1000.0 DEG2RAD);
+        int graspmin = (-10.0 * 1000.0 DEG2RAD);
 #ifdef SCISSOR_RIGHT
         if (armserial == GREEN_ARM_SERIAL) graspmin = (-40.0 * 1000.0 DEG2RAD);
-#endif 
+#endif
 		data1.rd[i].grasp -= grasp_gain * us_t->grasp[armidx];
 		if (data1.rd[i].grasp>graspmax) data1.rd[i].grasp=graspmax;
 		else if(data1.rd[i].grasp<graspmin) data1.rd[i].grasp=graspmin;
