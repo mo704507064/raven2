@@ -44,6 +44,7 @@
 //#define SCISSOR_RIGHT
 #define OPPOSE_GRIP
 
+
 //~~~~~~~~~ USB Board definition ~~~~~~~~~~~~~~~~~~~
 // Two arm identification
 // Change this to match device ID in /dev/brl_usbXX

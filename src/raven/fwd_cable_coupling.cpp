@@ -258,8 +258,8 @@ void fwdMechTorqueCoupling(struct mechanism *mech)
 
 // TODO:: why is only the RAVEN tool referenced in this?
 	// Tool degrees of freedom ===========================================
-	if (mech->tool_type == TOOL_GRASPER_10MM)
-	{
+//	if (mech->tool_type == TOOL_GRASPER_10MM)
+//	{
 		int sgn = (mech->type == GOLD_ARM) ? 1 : -1;
 		int sgn_6 = sgn;
 #ifdef OPPOSE_GRIP
@@ -269,7 +269,7 @@ void fwdMechTorqueCoupling(struct mechanism *mech)
 		th5 = (1.0/tr5) * (m5 - sgn*m4/GB_RATIO);
 		th6 = (1.0/tr6) * (m6 - sgn_6*m4/GB_RATIO);
 		th7 = (1.0/tr7) * (m7 - sgn*m4/GB_RATIO);
-	}
+//	}
 
 	// Now have solved for th1, th2, d3, th4, th5, th6
 	mech->joint[SHOULDER].jpos 	= th1;// - mech->joint[SHOULDER].jpos_off;

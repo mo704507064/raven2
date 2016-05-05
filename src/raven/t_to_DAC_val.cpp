@@ -78,7 +78,8 @@ int TorqueToDAC(struct device *device0)
             if ( soft_estopped )
                 device0->mech[i].joint[j].current_cmd = 0;
 
-        }
+            
+    }
     return 0;
 }
 
