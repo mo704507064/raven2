@@ -136,8 +136,8 @@ void getGravityTorque(struct device &d0, struct param_pass &params)
 	for (int m=0; m<NUM_MECH; m++)
 	{
 		_mech = &(d0.mech[m]);
-		G0 = G0Static;
-		//G0 = getCurrentG(&d0, m); uncomment this line to enable dynamic gravity vectors
+		//G0 = G0Static;
+		G0 = getCurrentG(&d0, m); //uncomment this line to enable dynamic gravity vectors
 
 
 		if (_mech->type == GOLD_ARM_SERIAL)

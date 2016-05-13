@@ -81,10 +81,15 @@ void initRobotData(struct device *device0, int runlevel, struct param_pass *curr
 
     //initialize gravity direction data
     if(!initialized){
-    currParams->grav_dir.x = -980;
+    currParams->grav_dir.x = 0;
     currParams->grav_dir.y = 0;
-    currParams->grav_dir.z = 0;
+    currParams->grav_dir.z = 980;
     currParams->grav_mag = 9.8;
+
+    device0->grav_dir.x = 0;
+    device0->grav_dir.y = 0;
+    device0->grav_dir.z = 980;
+    device0->grav_mag = 9.8;
     }
 
     //In ESTOP reset initialization
