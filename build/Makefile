@@ -244,19 +244,6 @@ clean_test_results/fast:
 .PHONY : clean_test_results/fast
 
 #=============================================================================
-# Target rules for targets named clean_test_results_raven_2
-
-# Build rule for target.
-clean_test_results_raven_2: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 clean_test_results_raven_2
-.PHONY : clean_test_results_raven_2
-
-# fast build rule for target.
-clean_test_results_raven_2/fast:
-	$(MAKE) -f CMakeFiles/clean_test_results_raven_2.dir/build.make CMakeFiles/clean_test_results_raven_2.dir/build
-.PHONY : clean_test_results_raven_2/fast
-
-#=============================================================================
 # Target rules for targets named download_extra_data
 
 # Build rule for target.
@@ -1322,7 +1309,6 @@ help:
 	@echo "... ROSBUILD_gensrv_lisp"
 	@echo "... _catkin_empty_exported_target"
 	@echo "... clean_test_results"
-	@echo "... clean_test_results_raven_2"
 	@echo "... download_extra_data"
 	@echo "... doxygen"
 	@echo "... edit_cache"

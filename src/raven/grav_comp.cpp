@@ -70,6 +70,8 @@ void getMotorTorqueFromJointTorque(int, double, double, double, double&, double&
 /*
  * getCurrentG()
  * \brief Return the current gravity vector from whatever power knows it.
+ *
+ *
  */
 tf::Vector3 getCurrentG(struct device *d0, int m)
 {
@@ -114,7 +116,7 @@ tf::Vector3 getCurrentG(struct device *d0, int m)
  *
  *
  *    Notation:
- *    Txy    - Transform from frame 0 to frame 1
+ *    Txy    - Transform from frame x to frame y
  *    COMx_y - Center of mass of link x in link-frame y
  *    Gx     - Gravity vector represented in link-frame x
  *    GTx    - 3-vector of gravitational torque at joint x (z-component represents torque around joint)
@@ -134,7 +136,9 @@ void getGravityTorque(struct device &d0, struct param_pass &params)
 	for (int m=0; m<NUM_MECH; m++)
 	{
 		_mech = &(d0.mech[m]);
-		G0 = getCurrentG(&d0, m);
+		G0 = G0Static;
+		//G0 = getCurrentG(&d0, m); uncomment this line to enable dynamic gravity vectors
+
 
 		if (_mech->type == GOLD_ARM_SERIAL)
 		{
@@ -164,18 +168,16 @@ void getGravityTorque(struct device &d0, struct param_pass &params)
 		R12 = T12.getBasis();
 		R23 = T23.getBasis();
 
-		///// Calculate COM in lower ink frames (closer to base)
+		///// Calculate COM in lower link frames (closer to base)
 		// Get COM3
 		tf::Vector3 COM3_2 = T23 * COM3_3;
 		tf::Vector3 COM3_1 = T12 * COM3_2;
-		tf::Vector3 COM3_0 = T01 * COM3_1;
+
 
 		// Get COM2
 		tf::Vector3 COM2_1 = T12 * COM2_2;
-		tf::Vector3 COM2_0 = T01 * COM2_1;
 
-		// Get COM1
-		tf::Vector3 COM1_0 = T01 * COM1_1;
+
 
 		///// Get gravity vector in each link frame
 		// Map G into Frame1
@@ -212,9 +214,10 @@ void getGravityTorque(struct device &d0, struct param_pass &params)
 		getMotorTorqueFromJointTorque(_mech->type, GZ1, GZ2, GZ3, MT1, MT2, MT3);
 
 		// Set motor g-torque
-		_mech->joint[SHOULDER].tau = MT1; 
-		_mech->joint[ELBOW   ].tau = MT2;
-		_mech->joint[Z_INS   ].tau = MT3;
+		_mech->joint[SHOULDER].tau_g = MT1;
+		_mech->joint[ELBOW   ].tau_g = MT2;
+		_mech->joint[Z_INS   ].tau_g = MT3;
+
 
 	}
 
