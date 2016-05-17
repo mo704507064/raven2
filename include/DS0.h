@@ -33,6 +33,7 @@
  *********************************************/
 
 #include "tools.h"
+#include "r2_jacobian.h"
 
 #ifndef DS0_H
 #define DS0_H
@@ -118,6 +119,13 @@ struct DOF {
   float perror_int;     // integrated position error for joint space position control
 };
 
+
+/** Tool type enumerator used in old init method
+ *
+ *  \todo deprecate this structure in favor of new tool class
+ *
+ */
+
 typedef enum {TOOL_NONE,
 	TOOL_GRASPER_10MM,
 	TOOL_GRASPER_8MM,
@@ -146,6 +154,7 @@ struct mechanism {
   struct DOF joint[MAX_DOF_PER_MECH];
   u_08 inputs;                  // input pins
   u_08 outputs;                 // output pins
+  r2_jacobian jac;
 };
 
 /********************************************************

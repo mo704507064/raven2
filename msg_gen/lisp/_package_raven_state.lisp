@@ -39,4 +39,8 @@
           GRASP_D
           ENCOFFSETS-VAL
           ENCOFFSETS
+          JAC_VEL-VAL
+          JAC_VEL
+          JAC_F-VAL
+          JAC_F
 ))

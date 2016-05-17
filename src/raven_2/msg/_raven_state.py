@@ -9,30 +9,31 @@ import genpy
 import std_msgs.msg
 
 class raven_state(genpy.Message):
-  _md5sum = "173f52385e84b98995f307af4bea25a2"
+  _md5sum = "36458a9b28396d471a5191ffe750ba3e"
   _type = "raven_2/raven_state"
   _has_header = False #flag to mark the presence of a Header object
-  _full_text = """Header      hdr
-int32       runlevel
-int32       sublevel
-int32       last_seq
-int32[2]    type
-int32[6]    pos
-float32[18]   ori
-float32[18]   ori_d
-int32[6]    pos_d
-duration    dt
-int32[16]   encVals
-float32[16] tau
-float32[16] mpos
-float32[16] jpos
-float32[16] mvel
-float32[16] jvel
-float32[16] mpos_d
-float32[16] jpos_d
-float32[2]  grasp_d
-float32[16] encoffsets
-
+  _full_text = """Header      	hdr
+int32       	runlevel
+int32       	sublevel
+int32       	last_seq
+int32[2]    	type
+int32[6]    	pos
+float32[18]   	ori
+float32[18]   	ori_d
+int32[6]    	pos_d
+duration    	dt
+int32[16]   	encVals
+float32[16] 	tau
+float32[16] 	mpos
+float32[16] 	jpos
+float32[16] 	mvel
+float32[16] 	jvel
+float32[16] 	mpos_d
+float32[16] 	jpos_d
+float32[2]  	grasp_d
+float32[16] 	encoffsets
+float32[12] 	jac_vel
+float32[12] 	jac_f
 ================================================================================
 MSG: std_msgs/Header
 # Standard metadata for higher-level stamped data types.
@@ -50,10 +51,9 @@ time stamp
 # 0: no frame
 # 1: global frame
 string frame_id
-
 """
-  __slots__ = ['hdr','runlevel','sublevel','last_seq','type','pos','ori','ori_d','pos_d','dt','encVals','tau','mpos','jpos','mvel','jvel','mpos_d','jpos_d','grasp_d','encoffsets']
-  _slot_types = ['std_msgs/Header','int32','int32','int32','int32[2]','int32[6]','float32[18]','float32[18]','int32[6]','duration','int32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[2]','float32[16]']
+  __slots__ = ['hdr','runlevel','sublevel','last_seq','type','pos','ori','ori_d','pos_d','dt','encVals','tau','mpos','jpos','mvel','jvel','mpos_d','jpos_d','grasp_d','encoffsets','jac_vel','jac_f']
+  _slot_types = ['std_msgs/Header','int32','int32','int32','int32[2]','int32[6]','float32[18]','float32[18]','int32[6]','duration','int32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[2]','float32[16]','float32[12]','float32[12]']
 
   def __init__(self, *args, **kwds):
     """
@@ -63,7 +63,7 @@ string frame_id
     changes.  You cannot mix in-order arguments and keyword arguments.
 
     The available fields are:
-       hdr,runlevel,sublevel,last_seq,type,pos,ori,ori_d,pos_d,dt,encVals,tau,mpos,jpos,mvel,jvel,mpos_d,jpos_d,grasp_d,encoffsets
+       hdr,runlevel,sublevel,last_seq,type,pos,ori,ori_d,pos_d,dt,encVals,tau,mpos,jpos,mvel,jvel,mpos_d,jpos_d,grasp_d,encoffsets,jac_vel,jac_f
 
     :param args: complete set of field values, in .msg order
     :param kwds: use keyword arguments corresponding to message field names
@@ -112,6 +112,10 @@ string frame_id
         self.grasp_d = [0.,0.]
       if self.encoffsets is None:
         self.encoffsets = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
+      if self.jac_vel is None:
+        self.jac_vel = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
+      if self.jac_f is None:
+        self.jac_f = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
     else:
       self.hdr = std_msgs.msg.Header()
       self.runlevel = 0
@@ -133,6 +137,8 @@ string frame_id
       self.jpos_d = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
       self.grasp_d = [0.,0.]
       self.encoffsets = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
+      self.jac_vel = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
+      self.jac_f = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
 
   def _get_types(self):
     """
@@ -176,8 +182,10 @@ string frame_id
       buff.write(_struct_16f.pack(*self.jpos_d))
       buff.write(_struct_2f.pack(*self.grasp_d))
       buff.write(_struct_16f.pack(*self.encoffsets))
-    except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(_x))))
-    except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(_x))))
+      buff.write(_struct_12f.pack(*self.jac_vel))
+      buff.write(_struct_12f.pack(*self.jac_f))
+    except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(locals().get('_x', self)))))
+    except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(locals().get('_x', self)))))
 
   def deserialize(self, str):
     """
@@ -256,6 +264,12 @@ string frame_id
       start = end
       end += 64
       self.encoffsets = _struct_16f.unpack(str[start:end])
+      start = end
+      end += 48
+      self.jac_vel = _struct_12f.unpack(str[start:end])
+      start = end
+      end += 48
+      self.jac_f = _struct_12f.unpack(str[start:end])
       self.dt.canon()
       return self
     except struct.error as e:
@@ -299,8 +313,10 @@ string frame_id
       buff.write(self.jpos_d.tostring())
       buff.write(self.grasp_d.tostring())
       buff.write(self.encoffsets.tostring())
-    except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(_x))))
-    except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(_x))))
+      buff.write(self.jac_vel.tostring())
+      buff.write(self.jac_f.tostring())
+    except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(locals().get('_x', self)))))
+    except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(locals().get('_x', self)))))
 
   def deserialize_numpy(self, str, numpy):
     """
@@ -380,6 +396,12 @@ string frame_id
       start = end
       end += 64
       self.encoffsets = numpy.frombuffer(str[start:end], dtype=numpy.float32, count=16)
+      start = end
+      end += 48
+      self.jac_vel = numpy.frombuffer(str[start:end], dtype=numpy.float32, count=12)
+      start = end
+      end += 48
+      self.jac_f = numpy.frombuffer(str[start:end], dtype=numpy.float32, count=12)
       self.dt.canon()
       return self
     except struct.error as e:
@@ -388,6 +410,7 @@ string frame_id
 _struct_I = genpy.struct_I
 _struct_18f = struct.Struct("<18f")
 _struct_16i = struct.Struct("<16i")
+_struct_12f = struct.Struct("<12f")
 _struct_6i = struct.Struct("<6i")
 _struct_16f = struct.Struct("<16f")
 _struct_3i = struct.Struct("<3i")

@@ -106,7 +106,17 @@
     :reader encoffsets
     :initarg :encoffsets
     :type (cl:vector cl:float)
-   :initform (cl:make-array 16 :element-type 'cl:float :initial-element 0.0)))
+   :initform (cl:make-array 16 :element-type 'cl:float :initial-element 0.0))
+   (jac_vel
+    :reader jac_vel
+    :initarg :jac_vel
+    :type (cl:vector cl:float)
+   :initform (cl:make-array 12 :element-type 'cl:float :initial-element 0.0))
+   (jac_f
+    :reader jac_f
+    :initarg :jac_f
+    :type (cl:vector cl:float)
+   :initform (cl:make-array 12 :element-type 'cl:float :initial-element 0.0)))
 )
 
 (cl:defclass raven_state (<raven_state>)
@@ -216,6 +226,16 @@
 (cl:defmethod encoffsets-val ((m <raven_state>))
   (roslisp-msg-protocol:msg-deprecation-warning "Using old-style slot reader raven_2-msg:encoffsets-val is deprecated.  Use raven_2-msg:encoffsets instead.")
   (encoffsets m))
+
+(cl:ensure-generic-function 'jac_vel-val :lambda-list '(m))
+(cl:defmethod jac_vel-val ((m <raven_state>))
+  (roslisp-msg-protocol:msg-deprecation-warning "Using old-style slot reader raven_2-msg:jac_vel-val is deprecated.  Use raven_2-msg:jac_vel instead.")
+  (jac_vel m))
+
+(cl:ensure-generic-function 'jac_f-val :lambda-list '(m))
+(cl:defmethod jac_f-val ((m <raven_state>))
+  (roslisp-msg-protocol:msg-deprecation-warning "Using old-style slot reader raven_2-msg:jac_f-val is deprecated.  Use raven_2-msg:jac_f instead.")
+  (jac_f m))
 (cl:defmethod roslisp-msg-protocol:serialize ((msg <raven_state>) ostream)
   "Serializes a message object of type '<raven_state>"
   (roslisp-msg-protocol:serialize (cl:slot-value msg 'hdr) ostream)
@@ -341,6 +361,18 @@
     (cl:write-byte (cl:ldb (cl:byte 8 16) bits) ostream)
     (cl:write-byte (cl:ldb (cl:byte 8 24) bits) ostream)))
    (cl:slot-value msg 'encoffsets))
+  (cl:map cl:nil #'(cl:lambda (ele) (cl:let ((bits (roslisp-utils:encode-single-float-bits ele)))
+    (cl:write-byte (cl:ldb (cl:byte 8 0) bits) ostream)
+    (cl:write-byte (cl:ldb (cl:byte 8 8) bits) ostream)
+    (cl:write-byte (cl:ldb (cl:byte 8 16) bits) ostream)
+    (cl:write-byte (cl:ldb (cl:byte 8 24) bits) ostream)))
+   (cl:slot-value msg 'jac_vel))
+  (cl:map cl:nil #'(cl:lambda (ele) (cl:let ((bits (roslisp-utils:encode-single-float-bits ele)))
+    (cl:write-byte (cl:ldb (cl:byte 8 0) bits) ostream)
+    (cl:write-byte (cl:ldb (cl:byte 8 8) bits) ostream)
+    (cl:write-byte (cl:ldb (cl:byte 8 16) bits) ostream)
+    (cl:write-byte (cl:ldb (cl:byte 8 24) bits) ostream)))
+   (cl:slot-value msg 'jac_f))
 )
 (cl:defmethod roslisp-msg-protocol:deserialize ((msg <raven_state>) istream)
   "Deserializes a message object of type '<raven_state>"
@@ -508,6 +540,24 @@
       (cl:setf (cl:ldb (cl:byte 8 16) bits) (cl:read-byte istream))
       (cl:setf (cl:ldb (cl:byte 8 24) bits) (cl:read-byte istream))
     (cl:setf (cl:aref vals i) (roslisp-utils:decode-single-float-bits bits)))))
+  (cl:setf (cl:slot-value msg 'jac_vel) (cl:make-array 12))
+  (cl:let ((vals (cl:slot-value msg 'jac_vel)))
+    (cl:dotimes (i 12)
+    (cl:let ((bits 0))
+      (cl:setf (cl:ldb (cl:byte 8 0) bits) (cl:read-byte istream))
+      (cl:setf (cl:ldb (cl:byte 8 8) bits) (cl:read-byte istream))
+      (cl:setf (cl:ldb (cl:byte 8 16) bits) (cl:read-byte istream))
+      (cl:setf (cl:ldb (cl:byte 8 24) bits) (cl:read-byte istream))
+    (cl:setf (cl:aref vals i) (roslisp-utils:decode-single-float-bits bits)))))
+  (cl:setf (cl:slot-value msg 'jac_f) (cl:make-array 12))
+  (cl:let ((vals (cl:slot-value msg 'jac_f)))
+    (cl:dotimes (i 12)
+    (cl:let ((bits 0))
+      (cl:setf (cl:ldb (cl:byte 8 0) bits) (cl:read-byte istream))
+      (cl:setf (cl:ldb (cl:byte 8 8) bits) (cl:read-byte istream))
+      (cl:setf (cl:ldb (cl:byte 8 16) bits) (cl:read-byte istream))
+      (cl:setf (cl:ldb (cl:byte 8 24) bits) (cl:read-byte istream))
+    (cl:setf (cl:aref vals i) (roslisp-utils:decode-single-float-bits bits)))))
   msg
 )
 (cl:defmethod roslisp-msg-protocol:ros-datatype ((msg (cl:eql '<raven_state>)))
@@ -518,16 +568,16 @@
   "raven_2/raven_state")
 (cl:defmethod roslisp-msg-protocol:md5sum ((type (cl:eql '<raven_state>)))
   "Returns md5sum for a message object of type '<raven_state>"
-  "173f52385e84b98995f307af4bea25a2")
+  "36458a9b28396d471a5191ffe750ba3e")
 (cl:defmethod roslisp-msg-protocol:md5sum ((type (cl:eql 'raven_state)))
   "Returns md5sum for a message object of type 'raven_state"
-  "173f52385e84b98995f307af4bea25a2")
+  "36458a9b28396d471a5191ffe750ba3e")
 (cl:defmethod roslisp-msg-protocol:message-definition ((type (cl:eql '<raven_state>)))
   "Returns full string definition for message of type '<raven_state>"
-  (cl:format cl:nil "Header      hdr~%int32       runlevel~%int32       sublevel~%int32       last_seq~%int32[2]    type~%int32[6]    pos~%float32[18]   ori~%float32[18]   ori_d~%int32[6]    pos_d~%duration    dt~%int32[16]   encVals~%float32[16] tau~%float32[16] mpos~%float32[16] jpos~%float32[16] mvel~%float32[16] jvel~%float32[16] mpos_d~%float32[16] jpos_d~%float32[2]  grasp_d~%float32[16] encoffsets~%~%================================================================================~%MSG: std_msgs/Header~%# Standard metadata for higher-level stamped data types.~%# This is generally used to communicate timestamped data ~%# in a particular coordinate frame.~%# ~%# sequence ID: consecutively increasing ID ~%uint32 seq~%#Two-integer timestamp that is expressed as:~%# * stamp.sec: seconds (stamp_secs) since epoch (in Python the variable is called 'secs')~%# * stamp.nsec: nanoseconds since stamp_secs (in Python the variable is called 'nsecs')~%# time-handling sugar is provided by the client library~%time stamp~%#Frame this data is associated with~%# 0: no frame~%# 1: global frame~%string frame_id~%~%~%"))
+  (cl:format cl:nil "Header      	hdr~%int32       	runlevel~%int32       	sublevel~%int32       	last_seq~%int32[2]    	type~%int32[6]    	pos~%float32[18]   	ori~%float32[18]   	ori_d~%int32[6]    	pos_d~%duration    	dt~%int32[16]   	encVals~%float32[16] 	tau~%float32[16] 	mpos~%float32[16] 	jpos~%float32[16] 	mvel~%float32[16] 	jvel~%float32[16] 	mpos_d~%float32[16] 	jpos_d~%float32[2]  	grasp_d~%float32[16] 	encoffsets~%float32[12] 	jac_vel~%float32[12] 	jac_f~%================================================================================~%MSG: std_msgs/Header~%# Standard metadata for higher-level stamped data types.~%# This is generally used to communicate timestamped data ~%# in a particular coordinate frame.~%# ~%# sequence ID: consecutively increasing ID ~%uint32 seq~%#Two-integer timestamp that is expressed as:~%# * stamp.sec: seconds (stamp_secs) since epoch (in Python the variable is called 'secs')~%# * stamp.nsec: nanoseconds since stamp_secs (in Python the variable is called 'nsecs')~%# time-handling sugar is provided by the client library~%time stamp~%#Frame this data is associated with~%# 0: no frame~%# 1: global frame~%string frame_id~%~%~%"))
 (cl:defmethod roslisp-msg-protocol:message-definition ((type (cl:eql 'raven_state)))
   "Returns full string definition for message of type 'raven_state"
-  (cl:format cl:nil "Header      hdr~%int32       runlevel~%int32       sublevel~%int32       last_seq~%int32[2]    type~%int32[6]    pos~%float32[18]   ori~%float32[18]   ori_d~%int32[6]    pos_d~%duration    dt~%int32[16]   encVals~%float32[16] tau~%float32[16] mpos~%float32[16] jpos~%float32[16] mvel~%float32[16] jvel~%float32[16] mpos_d~%float32[16] jpos_d~%float32[2]  grasp_d~%float32[16] encoffsets~%~%================================================================================~%MSG: std_msgs/Header~%# Standard metadata for higher-level stamped data types.~%# This is generally used to communicate timestamped data ~%# in a particular coordinate frame.~%# ~%# sequence ID: consecutively increasing ID ~%uint32 seq~%#Two-integer timestamp that is expressed as:~%# * stamp.sec: seconds (stamp_secs) since epoch (in Python the variable is called 'secs')~%# * stamp.nsec: nanoseconds since stamp_secs (in Python the variable is called 'nsecs')~%# time-handling sugar is provided by the client library~%time stamp~%#Frame this data is associated with~%# 0: no frame~%# 1: global frame~%string frame_id~%~%~%"))
+  (cl:format cl:nil "Header      	hdr~%int32       	runlevel~%int32       	sublevel~%int32       	last_seq~%int32[2]    	type~%int32[6]    	pos~%float32[18]   	ori~%float32[18]   	ori_d~%int32[6]    	pos_d~%duration    	dt~%int32[16]   	encVals~%float32[16] 	tau~%float32[16] 	mpos~%float32[16] 	jpos~%float32[16] 	mvel~%float32[16] 	jvel~%float32[16] 	mpos_d~%float32[16] 	jpos_d~%float32[2]  	grasp_d~%float32[16] 	encoffsets~%float32[12] 	jac_vel~%float32[12] 	jac_f~%================================================================================~%MSG: std_msgs/Header~%# Standard metadata for higher-level stamped data types.~%# This is generally used to communicate timestamped data ~%# in a particular coordinate frame.~%# ~%# sequence ID: consecutively increasing ID ~%uint32 seq~%#Two-integer timestamp that is expressed as:~%# * stamp.sec: seconds (stamp_secs) since epoch (in Python the variable is called 'secs')~%# * stamp.nsec: nanoseconds since stamp_secs (in Python the variable is called 'nsecs')~%# time-handling sugar is provided by the client library~%time stamp~%#Frame this data is associated with~%# 0: no frame~%# 1: global frame~%string frame_id~%~%~%"))
 (cl:defmethod roslisp-msg-protocol:serialization-length ((msg <raven_state>))
   (cl:+ 0
      (roslisp-msg-protocol:serialization-length (cl:slot-value msg 'hdr))
@@ -550,6 +600,8 @@
      0 (cl:reduce #'cl:+ (cl:slot-value msg 'jpos_d) :key #'(cl:lambda (ele) (cl:declare (cl:ignorable ele)) (cl:+ 4)))
      0 (cl:reduce #'cl:+ (cl:slot-value msg 'grasp_d) :key #'(cl:lambda (ele) (cl:declare (cl:ignorable ele)) (cl:+ 4)))
      0 (cl:reduce #'cl:+ (cl:slot-value msg 'encoffsets) :key #'(cl:lambda (ele) (cl:declare (cl:ignorable ele)) (cl:+ 4)))
+     0 (cl:reduce #'cl:+ (cl:slot-value msg 'jac_vel) :key #'(cl:lambda (ele) (cl:declare (cl:ignorable ele)) (cl:+ 4)))
+     0 (cl:reduce #'cl:+ (cl:slot-value msg 'jac_f) :key #'(cl:lambda (ele) (cl:declare (cl:ignorable ele)) (cl:+ 4)))
 ))
 (cl:defmethod roslisp-msg-protocol:ros-message-to-list ((msg <raven_state>))
   "Converts a ROS message object to a list"
@@ -574,4 +626,6 @@
     (cl:cons ':jpos_d (jpos_d msg))
     (cl:cons ':grasp_d (grasp_d msg))
     (cl:cons ':encoffsets (encoffsets msg))
+    (cl:cons ':jac_vel (jac_vel msg))
+    (cl:cons ':jac_f (jac_f msg))
 ))
