@@ -21,40 +21,59 @@
 /** Class header for jacobian class
  *
  *
- *  Created on: May 17, 2016
- *      Author: Andy Lewis
+ *  \date May 17, 2016
+ *  \author Andy Lewis
  */
 
 #ifndef R2_JACOBIAN_H_
 #define R2_JACOBIAN_H_
 
+
+#include <Eigen/Dense>
+
+//#include "DS0.h"
+
+
 /**
- * The r2_jacobian class holds the 6-DOF velocity and force vectors for a RAVEN mechanism
+ * \class The r2_jacobian class holds the 6-DOF velocity and force vectors for a RAVEN mechanism
  *
  *
  */
 class r2_jacobian{
-public:
 
-	float velocity[6];
-	float force[6];
+private:
+	Eigen::VectorXf velocity;
+	Eigen::VectorXf force;
+	Eigen::Matrix<float,6,6> j_matrix;
+
+
+
+	void set_vel(Eigen::VectorXf);
+
+	void set_force(Eigen::VectorXf);
+
+	int calc_jacobian(float[6], int);
+
+	int calc_velocities(float[6]);
+
+	int calc_forces(float[6]);
 
 //methods
-
+public:
     r2_jacobian(){};
 
-    r2_jacobian(float[6], float[6]);
+    r2_jacobian(Eigen::VectorXf, Eigen::VectorXf);
 
 	~r2_jacobian(){};
 
+	void get_vel(float*);
 
-    void update_r2_jacobian(float[6], float[6], float[6]);
+	void get_force(float*);
 
-	void set_vel(float[6]);
-
-	void set_force(float[6]);
+    int update_r2_jacobian(float[6], float[6], float[6], int);
 
 };
 
+int r2_device_jacobian(struct robot_device *d0, int runlevel);
 
 #endif /* R2_JACOBIAN_H_ */

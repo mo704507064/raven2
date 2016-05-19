@@ -56,6 +56,7 @@ typedef unsigned int	    u_24;
 typedef unsigned int	    u_32;
 typedef unsigned long long int	    u_64;
 
+
 /********************************************************
  *
  *  Structs for Cartesian values (formerly cartvals)
@@ -154,7 +155,7 @@ struct mechanism {
   struct DOF joint[MAX_DOF_PER_MECH];
   u_08 inputs;                  // input pins
   u_08 outputs;                 // output pins
-  r2_jacobian jac;
+  r2_jacobian r2_jac;  // class needed to avoid build error about forward declarations
 };
 
 /********************************************************

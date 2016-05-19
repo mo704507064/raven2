@@ -50,6 +50,7 @@
 #include "local_io.h"
 #include "update_device_state.h"
 #include "parallel.h"
+#include "r2_jacobian.h"
 
 extern int NUM_MECH; //Defined in rt_process_preempt.cpp
 extern unsigned long int gTime; //Defined in rt_process_preempt.cpp
@@ -103,6 +104,8 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
 
     //Forward kinematics
     r2_fwd_kin(device0, currParams->runlevel);
+
+    r2_device_jacobian(device0, currParams->runlevel);
 
     switch (controlmode){
 

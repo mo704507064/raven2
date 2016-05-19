@@ -40,7 +40,7 @@
 
 //#define RAVEN_TOOLS
 #define DV_ADAPTER			1
-//#define RICKS_TOOLS     //skips tool initialization //not supported since switch to tools.h?
+#define RICKS_TOOLS     //skips tool initialization //not supported since switch to tools.h?
 //#define SCISSOR_RIGHT
 #define OPPOSE_GRIP
 
@@ -210,8 +210,10 @@
 #define GRASP2_TR_GOLD_ARM     (GRASP2_TR_GREEN_ARM)
 
 //Link Angles/Lengths
-#define A12 (float)(1.30899694)    /*Link1 - 75deg in RAD*/
-#define A23 (float)(0.907571211)    /*Link2 - 52deg in RAD - was set to 60*/
+// these names cause conflicts with Eigen libraries
+// moved to inv_kinematics.h
+//#define A12 (float)(1.30899694)    /*Link1 - 75deg in RAD*/
+//#define A23 (float)(0.907571211)    /*Link2 - 52deg in RAD - was set to 60*/
 
 //Kinematic Zero Offset (encoder space)
 #define SHOULDER_GOLD_KIN_OFFSET (float)(0.0) //(62.0)
