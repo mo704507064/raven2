@@ -67,8 +67,8 @@ public:
 	float grasp2_home_angle;
 
 	//DanyingHu parameters
-	float shaft_length;
-	float wrist_length;
+	float shaft_length; //d4
+	float wrist_length; //lw
 
 //methods
 

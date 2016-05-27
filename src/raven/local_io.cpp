@@ -52,6 +52,7 @@ ROS publishing is at the bottom half of this file.
 #include "itp_teleoperation.h"
 #include "r2_kinematics.h"
 #include "reconfigure.h"
+#include "r2_jacobian.h"
 
 extern int NUM_MECH;
 extern USBStruct USBBoards;
@@ -459,6 +460,7 @@ void publish_ravenstate_ros(struct robot_device *dev,struct param_pass *currPara
         msg_ravenstate.pos_d[j*3+2] = dev->mech[j].pos_d.z;
         msg_ravenstate.grasp_d[j] = (float)dev->mech[j].ori_d.grasp/1000;
 
+
         for (int orii=0; orii<3; orii++)
         {
             for (int orij=0; orij<3; orij++)
@@ -480,6 +482,16 @@ void publish_ravenstate_ros(struct robot_device *dev,struct param_pass *currPara
             msg_ravenstate.jpos_d[jtype]     = dev->mech[j].joint[i].jpos_d RAD2DEG;
             msg_ravenstate.mpos_d[jtype]     = dev->mech[j].joint[i].mpos_d RAD2DEG;
             msg_ravenstate.encoffsets[jtype] = dev->mech[j].joint[i].enc_offset;
+        }
+
+        //grab jacobian velocities and forces
+        float vel[6];
+        float f[6];
+        dev->mech[j].r2_jac.get_vel(vel);
+        dev->mech[j].r2_jac.get_vel(f);
+        for (int i=0; i<6; i++){
+        	msg_ravenstate.jac_vel[j+i] = vel[i];
+        	msg_ravenstate.jac_f[j+i] = f[i];
         }
     }
 //    msg_ravenstate.f_secs = d.toSec();

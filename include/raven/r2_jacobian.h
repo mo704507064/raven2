@@ -31,6 +31,7 @@
 
 #include <Eigen/Dense>
 
+
 //#include "DS0.h"
 
 
@@ -52,7 +53,7 @@ private:
 
 	void set_force(Eigen::VectorXf);
 
-	int calc_jacobian(float[6], int);
+	int calc_jacobian(float[6], tool, int);
 
 	int calc_velocities(float[6]);
 
@@ -70,7 +71,7 @@ public:
 
 	void get_force(float*);
 
-    int update_r2_jacobian(float[6], float[6], float[6], int);
+    int update_r2_jacobian(float[6], float[6], float[6], tool, int);
 
 };
 

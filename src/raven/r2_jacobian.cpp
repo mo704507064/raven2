@@ -33,8 +33,14 @@
 #include <stdio.h>
 #include <iostream>
 #include "r2_jacobian_defs.h"
+#include "defines.h"
+#include "struct.h"
+
+
 
 extern int NUM_MECH;
+extern struct DOF_type DOF_types[];
+
 
 /** r2_jacobian constructor with pre-set velocities and forces
  *
@@ -66,7 +72,9 @@ void r2_jacobian::set_vel(Eigen::VectorXf vel){
  *	\return void
  */
 void r2_jacobian::get_vel(float vel[6]){
-
+	for (int i; i<6; i++){
+		vel[i] = velocity(i);
+	}
 	return;
 }
 
@@ -88,7 +96,9 @@ void r2_jacobian::set_force(Eigen::VectorXf f){
  *	\return void
  */
 void r2_jacobian::get_force(float f[]){
-
+	for (int i; i<6; i++){
+		f[i] = force(i);
+	}
     return;
 }
 
@@ -104,11 +114,11 @@ void r2_jacobian::get_force(float f[]){
  *
  * \return int   success = 1
  */
-int r2_jacobian::update_r2_jacobian(float j_pos[6], float j_vel[6], float j_torque[6], int arm_type){
+int r2_jacobian::update_r2_jacobian(float j_pos[6], float j_vel[6], float j_torque[6], tool a_tool, int arm_type){
 	int success = 0;
 
 	//recalculate matrix based on j pos
-	success = calc_jacobian(j_pos, arm_type); //success = 1 if jacobian is calculated successfully
+	success = calc_jacobian(j_pos, a_tool, arm_type); //success = 1 if jacobian is calculated successfully
 
 	//calculate jacobian velocities
 	success &= calc_velocities(j_vel); //success if velocities also calculated
@@ -120,6 +130,10 @@ int r2_jacobian::update_r2_jacobian(float j_pos[6], float j_vel[6], float j_torq
 	if (check %3000 == 0){
 		printf("updated Jacobian! \n");
 		std::cout<<j_matrix<<std::endl;
+		printf("updated Velocity! \n");
+		std::cout<<velocity<<std::endl;
+		printf("updated Force! \n");
+		std::cout<<force<<std::endl;
 		check = 0;
 	}
 	check++;
@@ -140,6 +154,16 @@ int r2_jacobian::update_r2_jacobian(float j_pos[6], float j_vel[6], float j_torq
 int r2_jacobian::calc_velocities(float j_vel[6]){
 	int success = 0;
 
+	Eigen::VectorXf j_vel_vec(6);
+
+	for(int i = 0; i < 6; i++){
+		j_vel_vec(i) = j_vel[i];
+	}
+
+	velocity = j_matrix * j_vel_vec;
+
+	success = 1;
+
 	return success;
 }
 
@@ -152,6 +176,14 @@ int r2_jacobian::calc_velocities(float j_vel[6]){
  */
 int r2_jacobian::calc_forces(float j_torques[6]){
 	int success = 0;
+
+	Eigen::VectorXf j_torques_vec(6);
+
+	for(int i = 0; i < 6; i++){
+		j_torques_vec(i) = j_torques[i];
+	}
+
+	force = j_matrix * j_torques_vec;
 
 	return success;
 }
@@ -173,7 +205,7 @@ int r2_device_jacobian(struct robot_device *d0, int runlevel){
 	float j_vel[6];
 	float j_torque[6];
 	int arm_type;
-
+	tool m_tool;
 
 	for (int m=0; m<NUM_MECH; m++){
 		//populate arrays for updating jacobian
@@ -182,11 +214,13 @@ int r2_device_jacobian(struct robot_device *d0, int runlevel){
 			j_vel[i] = d0->mech[m].joint[i].jvel;
 			/** \todo add joint torque calculation
 			 * tau_d is after gearbox  */
-			j_torque[i] = i;
+			j_torque[i] = d0->mech[m].joint[i].tau / DOF_types[i].TR;
+; // divided by transmission ratio?
 		}
 		arm_type = d0->mech[m].type;
+		m_tool = d0->mech[m].mech_tool;
 		//calculate jacobian values for this mech
-		success &= d0->mech[m].r2_jac.update_r2_jacobian(j_pos, j_vel, j_torque, arm_type);
+		success &= d0->mech[m].r2_jac.update_r2_jacobian(j_pos, j_vel, j_torque, m_tool, arm_type);
 
 	}
 
@@ -202,50 +236,120 @@ int r2_device_jacobian(struct robot_device *d0, int runlevel){
  * \return int   success = 1
  *
  */
-int r2_jacobian::calc_jacobian(float j_pos[6], int arm_type){
+int r2_jacobian::calc_jacobian(float j_pos[6], tool a_tool, int arm_type){
 	int success = 0;
-//row 1	(0-indexed)
-	j_matrix(0,0) = L*Ca12;
-	j_matrix(0,1) = 1;
-	j_matrix(0,2) = 1;
-	j_matrix(0,3) = 1;
-	j_matrix(0,4) = 1;
-	j_matrix(0,5) = 0;	//done
-//row 2
-	j_matrix(1,0) = 1;
-	j_matrix(1,1) = 1;
-	j_matrix(1,2) = 1;
-	j_matrix(1,3) = 1;
+
+	int lw;
+	int d4;
+	float dh_alpha[6]; //the remainder of DH params defined in defs.h file
+	int d3 = D3;
+
+
+	//set dh_alpha based on mech type
+	if (arm_type == GREEN_ARM_SERIAL){
+		for(int i = 0; i < 6; i++){
+			dh_alpha[i] = dh_alpha_gold[i];
+		}
+	}
+	else if (arm_type == GOLD_ARM_SERIAL){
+		for(int i = 0; i < 6; i++){
+			dh_alpha[i] = dh_alpha_green[i];
+		}
+	}else {
+		printf("What great magic is this!? A new arm type! I'm not even mad - I'm impressed.");
+	}
+
+	//set tool-specific variables
+	d4 = a_tool.shaft_length;
+	lw = a_tool.wrist_length;
+		//lw
+
+	dh_aa[5] = lw;
+
+
+// ********************************************* row 1 **********************************************
+	j_matrix(0,0) =   L*Ca12*Ca23*C5*lw*S6  + Ca12*C4*D3*Sa23*S6        + Ca12*C4*d4*Sa23*S6
+					+ Ca12*C4*lw*Sa23*S5*S6 - Ca12*C5*C6*d3*Sa23*S4     - Ca12*C5*C6*d4*Sa23*S4
+					- C2*Ca23*C4*D3*Sa12*S6  - C2*Ca23*C4*d4*Sa12*S6     - C2*Ca23*C4*lw*Sa12*S5*S6
+					+ C2*Ca23*C5*d3*Sa12*S4 + C2*Ca23*C5*C6*d4*Sa12*S4  + C2*C5*lw*Sa12*Sa23*S6
+					- C4*C5*C6*d3*Sa12*S2   - C4*C5*C6*d4*Sa12*Sa12     - d3*Sa12*S2*S4*S6
+					- d4*Sa12*S2*S4*S6      - lw*Sa12*S2*S4*S5*S6 ;
+
+	j_matrix(0,1) = Ca23*C5*lw*S6 + C4*d3*Sa23*S6 + C4*d4*Sa23*S6 + C4*lw*Sa23*S5*S6 - C5*C6*d3*Sa23*S4 - C5*C6*d4*Sa23*S4;
+
+	j_matrix(0,2) = C6*S5;
+
+	j_matrix(0,3) = -C5*lw*S6;
+
+	j_matrix(0,4) =  0;
+
+	j_matrix(0,5) =  0; //done
+//************************************************ row 2 ********************************************
+	j_matrix(1,0) =   L*Ca12*Ca23*C5*C6*lw      + Ca12*C4*C6*d3*Sa23       + Ca12*C4*C6*d4*Sa23
+					+ Ca12*C4*C6*lw*Sa23*S5     + Ca12*C5*d3*Sa23*S4*S6    + Ca12*C5*d4*Sa23*S4*S6
+					- C2*Ca23*C4*C6*d3*Sa12     - C2*Ca23*C4*C6*d4*Sa12    - C2*Ca23*C4*C6*lw*Sa12*S5
+					- C2*Ca23*C5*d3*Sa12*S4*S6  - C2*Ca23*C5*d4*Sa12*S4*S6 + C2*C5*C6*lw*Sa12*Sa23
+					+ C4*C5*d3*Sa12*S2*S6       - C4*C5*C6*d4*Sa12*S2*S6   - C6*d3*Sa12*S2*S4
+					- C6*d4*Sa12*S2*S4          - C6*lw*Sa12*S2*S4*S5 ;
+
+	j_matrix(1,1) = Ca23*C5*C6*lw + C4*C6*d3*Sa23 + C4*C6*d4*Sa23 + C4*C6*lw*Sa23*S5 + C5*d3*Sa23*S4*S6 + C5*d4*Sa23*S4*S6;
+
+	j_matrix(1,2) = - S5*S6;
+
+	j_matrix(1,3) = - C5*C6*lw;
+
 	j_matrix(1,4) = 1;
+
 	j_matrix(1,5) = 0; //done
-//row 3
-	j_matrix(2,0) = 1;
-	j_matrix(2,1) = 1;
-	j_matrix(2,2) = 1;
-	j_matrix(2,3) = 1;
-	j_matrix(2,4) = 0; //done
-	j_matrix(2,5) = 1;
-//row 4
-	j_matrix(3,0) = 1;
-	j_matrix(3,1) = 1;
-	j_matrix(3,2) = 1;
-	j_matrix(3,3) = 0; //done
-	j_matrix(3,4) = 1;
-	j_matrix(3,5) = 1;
-//row 5
-	j_matrix(4,0) = 1;
-	j_matrix(4,1) = 1;
-	j_matrix(4,2) = 1;
-	j_matrix(4,3) = 0; //done
-	j_matrix(4,4) = 1;
-	j_matrix(4,5) = 1;
-//row 6
-	j_matrix(5,0) = 1;
-	j_matrix(5,1) = 1;
-	j_matrix(5,2) = 1;
-	j_matrix(5,3) = 0; //done
-	j_matrix(5,4) = 1;
-	j_matrix(5,5) = 0; //done
+//************************************************ row 3 ********************************************
+	j_matrix(2,0) = L - Ca12*d3*Sa23*S4*S5    - Ca12*d4*Sa23*S4*S5    - Ca12*lw*Sa23*S4
+			  	  	  + C2*Ca23*d3*Sa12*S4*S5 + C2*Ca23*d4*Sa12*S4*S5 + C2*Ca23*lw*Sa12*S4
+					  - C4*d3*Sa12*S2*S5      - C4*d4*Sa12*S2*S5      - C4*lw*Sa12*S2;
+
+	j_matrix(2,1) = -d3*Sa23*S4*S5 - d4*Sa23*S4*S5 - lw*Sa23*S4;
+
+	j_matrix(2,2) = -C5;
+
+	j_matrix(2,3) = 0;
+
+	j_matrix(2,4) = -lw;
+
+	j_matrix(2,5) = 0;
+
+//************************************************ row 4 ********************************************
+	j_matrix(3,0) = L - Ca12*Ca23*C6*S5       + Ca12*C4*C5*C6*Sa23 + Ca12*Sa23*S4*S6
+			          - C2*Ca23*C4*C5*C6*Sa12 - C2*Ca23*Sa12*S4*S6 - C2*C6*Sa12*Sa23*S5
+			          + C4*Sa12*S2*S6         - C5*C6*Sa12*S2*S4;
+
+	j_matrix(3,1) = - Ca23*C6*S5 + C4*C5*C6*Sa23 + Sa23*S4*S6;
+
+	j_matrix(3,2) = 0;
+
+	j_matrix(3,3) = C6*S5;
+
+	j_matrix(3,4) = S6;
+
+	j_matrix(3,5) = 0;
+
+//************************************************ row 5 ********************************************
+	j_matrix(4,0) =   L*Ca12*Ca23*S5*S6     - Ca12*C4*C5*Sa23*S6 + Ca12*C6*Sa23*S4
+					+ C2*Ca23*C4*C5*Sa12*S6 - C2*Ca23*C6*Sa12*S4
+					+ C2*Sa12*Sa23*S5*S6    + C4*C6*Sa12*S2      + C5*Sa12*S2*S4*S6;
+	j_matrix(4,1) = Ca23*S5*S6 - C4*C5*Sa23*S6 + C6*Sa23*S4;
+	j_matrix(4,2) = 0;
+	j_matrix(4,3) = -S5*S6;
+	j_matrix(4,4) = C6;
+	j_matrix(4,5) = 0;
+//************************************************ row 6 ********************************************
+	j_matrix(5,0) = L*Ca12*Ca23*C5 + Ca12*C4*Sa23*S5 - C2*Ca23*C4*Sa12*S5
+					+ C2*C5*Sa12*Sa23 - Sa12*S2*S4*S5;
+	j_matrix(5,1) = Ca23*C5 + C4*Sa23*S5;
+	j_matrix(5,2) = 0;
+	j_matrix(5,3) = -C5;
+	j_matrix(5,4) = 0;
+	j_matrix(5,5) = 0;
+
+	success = 1;
 
 	return success;
 }
