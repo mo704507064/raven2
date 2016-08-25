@@ -96,8 +96,9 @@ void r2_jacobian::set_force(Eigen::VectorXf f){
  *	\return void
  */
 void r2_jacobian::get_force(float f[]){
-	for (int i; i<6; i++){
-		f[i] = force(i);
+	int k;
+	for (k; k<6; k++){
+		f[k] = force(k);
 	}
     return;
 }
@@ -205,17 +206,20 @@ int r2_device_jacobian(struct robot_device *d0, int runlevel){
 	float j_vel[6];
 	float j_torque[6];
 	int arm_type;
+	int offset = 0;
 	tool m_tool;
 
 	for (int m=0; m<NUM_MECH; m++){
 		//populate arrays for updating jacobian
 		for (int i = 0; i < 6; i++){
-			j_pos[i] = d0->mech[m].joint[i].jpos;
-			j_vel[i] = d0->mech[m].joint[i].jvel;
+			offset = (i >= 3) ? 1 : 0; //skip getting tau for 4, since it is unpopulated
+
+			j_pos[i] = d0->mech[m].joint[i+offset].jpos;
+			j_vel[i] = d0->mech[m].joint[i+offset].jvel;
 			/** \todo add joint torque calculation
 			 * tau_d is after gearbox  */
-			j_torque[i] = d0->mech[m].joint[i].tau / DOF_types[i].TR;
-; // divided by transmission ratio?
+
+			j_torque[i] = d0->mech[m].joint[i+offset].tau_d ; //  / DOF_types[i+offset].TR; // divided by transmission ratio?
 		}
 		arm_type = d0->mech[m].type;
 		m_tool = d0->mech[m].mech_tool;
@@ -224,6 +228,19 @@ int r2_device_jacobian(struct robot_device *d0, int runlevel){
 
 	}
 
+
+	static int check = 0;
+	if (check %1000 == 0){
+
+		printf("velocity check! \n");
+		std::cout<<j_vel[0]<<",  "<<j_vel[1]<<",  "<<j_vel[2]<<",  "<<j_vel[3]<<",  "<<j_vel[4]<<",  "<<j_vel[5]<<std::endl;
+
+
+		printf("torque check! \n");
+		std::cout<<j_torque[0]<<",  "<<j_torque[1]<<",  "<<j_torque[2]<<",  "<<j_torque[3]<<",  "<<j_torque[4]<<",  "<<j_torque[5]<<std::endl;
+		check = 0;
+	}
+	check++;
 
 	return success;
 }
@@ -347,7 +364,7 @@ int r2_jacobian::calc_jacobian(float j_pos[6], tool a_tool, int arm_type){
 	j_matrix(5,2) = 0;
 	j_matrix(5,3) = -C5;
 	j_matrix(5,4) = 0;
-	j_matrix(5,5) = 0;
+	j_matrix(5,5) = 1;
 
 	success = 1;
 
