@@ -134,7 +134,7 @@ int receiveUserspace(void *u,int size)
  * \question why is setting the sequence number like this a hack?
  * \todo Apply transform to incoming data </capslock>
  * \param us_t a pointer to the user input structure
- *
+  *
  *  \ingroup DataStructures
  */
 void teleopIntoDS1(struct u_struct *us_t)
@@ -482,6 +482,7 @@ void publish_ravenstate_ros(struct robot_device *dev,struct param_pass *currPara
             msg_ravenstate.jpos_d[jtype]     = dev->mech[j].joint[i].jpos_d RAD2DEG;
             msg_ravenstate.mpos_d[jtype]     = dev->mech[j].joint[i].mpos_d RAD2DEG;
             msg_ravenstate.encoffsets[jtype] = dev->mech[j].joint[i].enc_offset;
+            msg_ravenstate.dac_val[jtype]    = dev->mech[j].joint[i].current_cmd;
         }
 
         //grab jacobian velocities and forces

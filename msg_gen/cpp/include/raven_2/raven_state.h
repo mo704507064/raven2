@@ -34,6 +34,7 @@ struct raven_state_ {
   , pos_d()
   , dt()
   , encVals()
+  , dac_val()
   , tau()
   , mpos()
   , jpos()
@@ -52,6 +53,7 @@ struct raven_state_ {
     ori_d.assign(0.0);
     pos_d.assign(0);
     encVals.assign(0);
+    dac_val.assign(0);
     tau.assign(0.0);
     mpos.assign(0.0);
     jpos.assign(0.0);
@@ -77,6 +79,7 @@ struct raven_state_ {
   , pos_d()
   , dt()
   , encVals()
+  , dac_val()
   , tau()
   , mpos()
   , jpos()
@@ -95,6 +98,7 @@ struct raven_state_ {
     ori_d.assign(0.0);
     pos_d.assign(0);
     encVals.assign(0);
+    dac_val.assign(0);
     tau.assign(0.0);
     mpos.assign(0.0);
     jpos.assign(0.0);
@@ -140,6 +144,9 @@ struct raven_state_ {
 
   typedef boost::array<int32_t, 16>  _encVals_type;
   boost::array<int32_t, 16>  encVals;
+
+  typedef boost::array<int32_t, 16>  _dac_val_type;
+  boost::array<int32_t, 16>  dac_val;
 
   typedef boost::array<float, 16>  _tau_type;
   boost::array<float, 16>  tau;
@@ -202,12 +209,12 @@ template<class ContainerAllocator>
 struct MD5Sum< ::raven_2::raven_state_<ContainerAllocator> > {
   static const char* value() 
   {
-    return "36458a9b28396d471a5191ffe750ba3e";
+    return "ce9e7f4969049d8bb365de3c98461a01";
   }
 
   static const char* value(const  ::raven_2::raven_state_<ContainerAllocator> &) { return value(); } 
-  static const uint64_t static_value1 = 0x36458a9b28396d47ULL;
-  static const uint64_t static_value2 = 0x1a5191ffe750ba3eULL;
+  static const uint64_t static_value1 = 0xce9e7f4969049d8bULL;
+  static const uint64_t static_value2 = 0xb365de3c98461a01ULL;
 };
 
 template<class ContainerAllocator>
@@ -235,6 +242,7 @@ float32[18]   	ori_d\n\
 int32[6]    	pos_d\n\
 duration    	dt\n\
 int32[16]   	encVals\n\
+int32[16]       dac_val\n\
 float32[16] 	tau\n\
 float32[16] 	mpos\n\
 float32[16] 	jpos\n\
@@ -246,6 +254,7 @@ float32[2]  	grasp_d\n\
 float32[16] 	encoffsets\n\
 float32[12] 	jac_vel\n\
 float32[12] 	jac_f\n\
+\n\
 ================================================================================\n\
 MSG: std_msgs/Header\n\
 # Standard metadata for higher-level stamped data types.\n\
@@ -293,6 +302,7 @@ template<class ContainerAllocator> struct Serializer< ::raven_2::raven_state_<Co
     stream.next(m.pos_d);
     stream.next(m.dt);
     stream.next(m.encVals);
+    stream.next(m.dac_val);
     stream.next(m.tau);
     stream.next(m.mpos);
     stream.next(m.jpos);
@@ -367,6 +377,12 @@ s << std::endl;
     {
       s << indent << "  encVals[" << i << "]: ";
       Printer<int32_t>::stream(s, indent + "  ", v.encVals[i]);
+    }
+    s << indent << "dac_val[]" << std::endl;
+    for (size_t i = 0; i < v.dac_val.size(); ++i)
+    {
+      s << indent << "  dac_val[" << i << "]: ";
+      Printer<int32_t>::stream(s, indent + "  ", v.dac_val[i]);
     }
     s << indent << "tau[]" << std::endl;
     for (size_t i = 0; i < v.tau.size(); ++i)

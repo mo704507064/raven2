@@ -126,7 +126,7 @@ int r2_jacobian::update_r2_jacobian(float j_pos[6], float j_vel[6], float j_torq
 
 	//calculate jacobian forces
 	success &= calc_forces(j_torque); //success if velocities also calculated
-
+/*
 	static int check = 0;
 	if (check %3000 == 0){
 		printf("updated Jacobian! \n");
@@ -138,7 +138,7 @@ int r2_jacobian::update_r2_jacobian(float j_pos[6], float j_vel[6], float j_torq
 		check = 0;
 	}
 	check++;
-
+*/
 	return success;
 
 }
@@ -228,7 +228,7 @@ int r2_device_jacobian(struct robot_device *d0, int runlevel){
 
 	}
 
-
+/*
 	static int check = 0;
 	if (check %1000 == 0){
 
@@ -241,6 +241,7 @@ int r2_device_jacobian(struct robot_device *d0, int runlevel){
 		check = 0;
 	}
 	check++;
+	*/
 
 	return success;
 }

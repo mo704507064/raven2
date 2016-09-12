@@ -54,7 +54,7 @@
 
 //~~~~~~~~ Other settings, experts only ~~~~~~~~~~~~
 #define NO_LPF    // This setting short circuits the Low Pass Filter in state_estimate.cpp
-//#define OMNI_GAIN  3  // Get a little more oomph out of the omni grasping button - sets a gain in local__io.cpp
+#define OMNI_GAIN  2  // Get a little more oomph out of the omni grasping button - sets a gain in local__io.cpp
 //#define ORIENTATION_V
 
 //~~~~~~~~ Other defines ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

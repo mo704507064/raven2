@@ -21,6 +21,8 @@
           DT
           ENCVALS-VAL
           ENCVALS
+          DAC_VAL-VAL
+          DAC_VAL
           TAU-VAL
           TAU
           MPOS-VAL
