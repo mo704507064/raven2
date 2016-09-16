@@ -193,6 +193,11 @@
 // TR6 : Sixth joint, Grasper jaw 1
 // TR7 : Seventh joint, Grasper jaw 2
 //    This is most critical in init.cpp - initDOFparams() and
+//
+// USES:
+// ~~ Torque_motor * TR = Torque_joint
+// ~~ m_pos / TR = j_pos
+
 #define SHOULDER_TR_GREEN_ARM (float)( (PARTIAL_PULLEY_LINK1_RADIUS/CAPSTAN_RADIUS_GP42) * GEAR_BOX_GP42_TR) // RE-40, GP-42 // UNITLESS
 #define ELBOW_TR_GREEN_ARM    (float)( (PARTIAL_PULLEY_LINK2_RADIUS/CAPSTAN_LINK2_SMALL_RADIUS)  *  (CAPSTAN_LINK2_LARGE_RADIUS/CAPSTAN_RADIUS_GP42) * GEAR_BOX_GP42_TR) // RE-40, GP-42 // UNITLESS
 #define Z_INS_TR_GREEN_ARM    (float)( (1.0/((2*M_PI*CAPSTAN_RADIUS_GP42)/1000.0)) * GEAR_BOX_GP42_TR *2*M_PI) // UNITS: rad/meter  Note: 2pi cancels

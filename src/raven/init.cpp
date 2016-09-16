@@ -277,7 +277,7 @@ void initDOFs(struct device *device0)
             else if (device0->mech[i].type == GREEN_ARM)
                 torque_sign = 1;
             else
-                err_msg("Unknown mech type ini init!");
+                err_msg("Unknown mech type i in ini init!");
 #endif
             // Set i-max and current-torque conversion constants
             if ( (j==SHOULDER) || (j==ELBOW) || (j==Z_INS) )

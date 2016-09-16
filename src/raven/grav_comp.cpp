@@ -245,9 +245,9 @@ void getMotorTorqueFromJointTorque(int arm, double in_GZ1, double in_GZ2, double
 {
 	// claculate motor torques from joint torques
 	// TODO:: add in additional cable-coupling terms
-	out_MT1 = in_GZ1 / GEAR_BOX_GP42_TR;
-	out_MT2 = in_GZ2 / GEAR_BOX_GP42_TR;
-	out_MT3 = in_GZ3 / GEAR_BOX_GP42_TR;
+	out_MT1 = in_GZ1 / SHOULDER_TR_GOLD_ARM * GEAR_BOX_GP42_TR;
+	out_MT2 = in_GZ2 / ELBOW_TR_GOLD_ARM * GEAR_BOX_GP42_TR;
+	out_MT3 = in_GZ3 / Z_INS_TR_GOLD_ARM * GEAR_BOX_GP42_TR;
 
 	return;
 }

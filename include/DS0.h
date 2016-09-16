@@ -107,8 +107,8 @@ struct DOF {
   //  float mpos_old;
   float jvel; 		// actual DOF velocity(q-dot)
   float mvel;
-  float tau;		// actual DOF force/torque
-  float tau_d;		// desired DOF force/torque
+  float tau;		// actual DOF force/torque at joint
+  float tau_d;		// desired DOF force/torque at motor capstan after gearbox
   float tau_g;		// Estimated gravity force/torque on joint.
   float jpos_d;		// desired DOF coordinate (rad)
   float mpos_d;

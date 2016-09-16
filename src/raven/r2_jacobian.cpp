@@ -161,7 +161,7 @@ int r2_jacobian::calc_velocities(float j_vel[6]){
 		j_vel_vec(i) = j_vel[i];
 	}
 
-	velocity = j_matrix * j_vel_vec;
+	velocity =  j_matrix * j_vel_vec;
 
 	success = 1;
 
@@ -184,7 +184,7 @@ int r2_jacobian::calc_forces(float j_torques[6]){
 		j_torques_vec(i) = j_torques[i];
 	}
 
-	force = j_matrix * j_torques_vec;
+	force = j_matrix.transpose().inverse() * j_torques_vec;//j_matrix * j_torques_vec;
 
 	return success;
 }
@@ -205,9 +205,13 @@ int r2_device_jacobian(struct robot_device *d0, int runlevel){
 	float j_pos[6];
 	float j_vel[6];
 	float j_torque[6];
+	float capstan_torque; //torque at the capstan (after gearbox)
+	float grav_t;
+	float applied_t;
 	int arm_type;
 	int offset = 0;
 	tool m_tool;
+
 
 	for (int m=0; m<NUM_MECH; m++){
 		//populate arrays for updating jacobian
@@ -216,32 +220,53 @@ int r2_device_jacobian(struct robot_device *d0, int runlevel){
 
 			j_pos[i] = d0->mech[m].joint[i+offset].jpos;
 			j_vel[i] = d0->mech[m].joint[i+offset].jvel;
-			/** \todo add joint torque calculation
-			 * tau_d is after gearbox  */
 
-			j_torque[i] = d0->mech[m].joint[i+offset].tau_d ; //  / DOF_types[i+offset].TR; // divided by transmission ratio?
+			//we really care about the joint torque applied beyond the gravity torque
+			if (i < 3){
+				//capstan torque for the first 3 joints is already calculated
+				grav_t = d0->mech[m].joint[i+offset].tau_g;
+			}
+			else
+				//we haven't calculated gravity torques on the tool joints yet - probably unnecessary?
+				grav_t = 0;
+
+			//grab the applied capstan torque
+			applied_t =  d0->mech[m].joint[i+offset].tau;
+
+//			printf("forces check! \n");
+//			if((i==0) and (check % 1000 == 0))std::cout<<grav_t<<",  "<<applied_t<<std::endl;
+
+			//finally, subtract gravity joint torque from applied joint torque to find the non-gravity joint torques
+			//and populate the output array
+
+			double gearbox = (i < 3) ? GEAR_BOX_GP42_TR : GEAR_BOX_GP32_TR; //use the big gearbox for the first 3 joints
+			j_torque[i] = (applied_t - grav_t)  * DOF_types[i+offset].TR / gearbox; // t_joint = t_capstan * (torque transfer ratio / Gear box ratio)
+
 		}
+
 		arm_type = d0->mech[m].type;
 		m_tool = d0->mech[m].mech_tool;
 		//calculate jacobian values for this mech
 		success &= d0->mech[m].r2_jac.update_r2_jacobian(j_pos, j_vel, j_torque, m_tool, arm_type);
 
+
+//		static int check = 0;
+//		if (check %2000 == 0){
+//
+//			printf("velocity check! \n");
+//			std::cout<<j_vel[0]<<",  "<<j_vel[1]<<",  "<<j_vel[2]<<",  "<<j_vel[3]<<",  "<<j_vel[4]<<",  "<<j_vel[5]<<std::endl;
+//
+//
+//			printf("torque check! \n");
+//			std::cout<<j_torque[0]<<",  "<<j_torque[1]<<",  "<<j_torque[2]<<",  "<<j_torque[3]<<",  "<<j_torque[4]<<",  "<<j_torque[5]<<std::endl;
+//			check = 0;
+//		}
+//		check++;
+
 	}
 
-/*
-	static int check = 0;
-	if (check %1000 == 0){
-
-		printf("velocity check! \n");
-		std::cout<<j_vel[0]<<",  "<<j_vel[1]<<",  "<<j_vel[2]<<",  "<<j_vel[3]<<",  "<<j_vel[4]<<",  "<<j_vel[5]<<std::endl;
 
 
-		printf("torque check! \n");
-		std::cout<<j_torque[0]<<",  "<<j_torque[1]<<",  "<<j_torque[2]<<",  "<<j_torque[3]<<",  "<<j_torque[4]<<",  "<<j_torque[5]<<std::endl;
-		check = 0;
-	}
-	check++;
-	*/
 
 	return success;
 }

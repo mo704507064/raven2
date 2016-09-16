@@ -471,28 +471,29 @@ void publish_ravenstate_ros(struct robot_device *dev,struct param_pass *currPara
         }
 
 
-        for (int i=0; i<numdof; i++){
-            int jtype = dev->mech[j].joint[i].type;
-            msg_ravenstate.encVals[jtype]    = dev->mech[j].joint[i].enc_val;
-            msg_ravenstate.tau[jtype]        = dev->mech[j].joint[i].tau_d;
-            msg_ravenstate.mpos[jtype]       = dev->mech[j].joint[i].mpos RAD2DEG;
-            msg_ravenstate.jpos[jtype]       = dev->mech[j].joint[i].jpos RAD2DEG;
-            msg_ravenstate.mvel[jtype]       = dev->mech[j].joint[i].mvel RAD2DEG;
-            msg_ravenstate.jvel[jtype]       = dev->mech[j].joint[i].jvel RAD2DEG;
-            msg_ravenstate.jpos_d[jtype]     = dev->mech[j].joint[i].jpos_d RAD2DEG;
-            msg_ravenstate.mpos_d[jtype]     = dev->mech[j].joint[i].mpos_d RAD2DEG;
-            msg_ravenstate.encoffsets[jtype] = dev->mech[j].joint[i].enc_offset;
-            msg_ravenstate.dac_val[jtype]    = dev->mech[j].joint[i].current_cmd;
+        for (int m=0; m<numdof; m++){
+            int jtype = dev->mech[j].joint[m].type;
+            msg_ravenstate.encVals[jtype]    = dev->mech[j].joint[m].enc_val;
+            msg_ravenstate.tau[jtype]        = dev->mech[j].joint[m].tau_d;
+            msg_ravenstate.mpos[jtype]       = dev->mech[j].joint[m].mpos RAD2DEG;
+            msg_ravenstate.jpos[jtype]       = dev->mech[j].joint[m].jpos RAD2DEG;
+            msg_ravenstate.mvel[jtype]       = dev->mech[j].joint[m].mvel RAD2DEG;
+            msg_ravenstate.jvel[jtype]       = dev->mech[j].joint[m].jvel RAD2DEG;
+            msg_ravenstate.jpos_d[jtype]     = dev->mech[j].joint[m].jpos_d RAD2DEG;
+            msg_ravenstate.mpos_d[jtype]     = dev->mech[j].joint[m].mpos_d RAD2DEG;
+            msg_ravenstate.encoffsets[jtype] = dev->mech[j].joint[m].enc_offset;
+            msg_ravenstate.dac_val[jtype]    = dev->mech[j].joint[m].current_cmd;
         }
 
         //grab jacobian velocities and forces
         float vel[6];
         float f[6];
+        j = dev->mech[i].type == GREEN_ARM ? 1 : 0;
         dev->mech[j].r2_jac.get_vel(vel);
         dev->mech[j].r2_jac.get_vel(f);
-        for (int i=0; i<6; i++){
-        	msg_ravenstate.jac_vel[j+i] = vel[i];
-        	msg_ravenstate.jac_f[j+i] = f[i];
+        for (int k=0; k<6; k++){
+        	msg_ravenstate.jac_vel[j*6+k] = vel[k];
+        	msg_ravenstate.jac_f[j*6+k] = f[k];
         }
     }
 //    msg_ravenstate.f_secs = d.toSec();
