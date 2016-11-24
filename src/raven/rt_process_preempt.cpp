@@ -158,8 +158,11 @@ static void *rt_process(void* )
     {
       0
     };
-  struct timespec t, tnow, t2, tbz;                           // Tracks the timer value
+  struct timespec t, tnow, t2, tbz, t_message;            // Tracks the timer value
   int interval= 1 * MS;                        // task period in nanoseconds
+
+  int message_loop = 0;
+  int last_message = 0;
 
   //CPU locking doesn't help timing.  Oh well.
   //Lock thread to first available CPU
@@ -196,105 +199,115 @@ static void *rt_process(void* )
 
   // Setup periodic timer
   clock_gettime(CLOCK_REALTIME,&t);   // get current time
+
   t.tv_sec += 1;                      // start after short delay
   tsnorm(&t);
   clock_nanosleep(0, TIMER_ABSTIME, &t, NULL);
 
   log_msg("*** Ready to teleoperate ***");
 
+  clock_gettime(CLOCK_REALTIME,&t_message);
 
 
 
   // --- Main robot control loop ---
   // TODO: Break when board becomes disconnected.
   while (ros::ok() && !r2_kill)
-    {
+  {
 
-      // Initiate USB Read
-      initiateUSBGet(&device0);
+	  // Initiate USB Read
+	  initiateUSBGet(&device0);
 
-      // Set next timer-shot (must be in future)
-      clock_gettime(CLOCK_REALTIME,&tnow);
-      int sleeploops = 0;
-      while (isbefore(t,tnow))
-        {
-	  t.tv_nsec+=interval;
-	  tsnorm(&t);
-	  sleeploops++;
-        }
-      if (sleeploops!=1)
-	std::cout<< "slplup"<< sleeploops <<std::endl;
+	  // Set next timer-shot (must be in future)
+	  clock_gettime(CLOCK_REALTIME,&tnow);
+	  int sleeploops = 0;
+	  while (isbefore(t,tnow))
+	  {
+		  t.tv_nsec+=interval;
+		  tsnorm(&t);
+		  sleeploops++;
+	  }
+	  if (sleeploops!=1)
+		  std::cout<< "slplup"<< sleeploops <<std::endl;
 
-      parport_out(0x00);
-      /// SLEEP until next timer shot
-      clock_nanosleep(0, TIMER_ABSTIME, &t, NULL);
-      parport_out(0x03);
-      gTime++;
+	  //parport_out(0x00);
+	  /// SLEEP until next timer shot
+	  clock_nanosleep(0, TIMER_ABSTIME, &t, NULL);
+	  //parport_out(0x03);
+	  gTime++;
 
-      // Get USB data that's been initiated already
-      // Get and Process USB Packets
+	  // Get USB data that's been initiated already
+	  // Get and Process USB Packets
 
-      // HACK HACK HACK
-      // loop until data ready
-      // better to ensure realtime access to driver
-      int loops = 0;
-      int ret;
+	  // HACK HACK HACK
+	  // loop until data ready
+	  // better to ensure realtime access to driver
+	  int loops = 0;
+	  int ret;
 
-      clock_gettime(CLOCK_REALTIME,&tbz);
-      clock_gettime(CLOCK_REALTIME,&tnow);
-      while ( (ret=getUSBPackets(&device0)) == -EBUSY && loops < 10)
-        {
-	  tbz.tv_nsec+=10*US; //Update timer count for next clock interrupt
-	  tsnorm(&tbz);
-	  clock_nanosleep(0, TIMER_ABSTIME, &tbz, NULL);
-	  loops++;
-        }
-      clock_gettime(CLOCK_REALTIME,&t2);
-      t2 = tsSubtract(t2, tnow);
-      if (loops!=0)
-	std::cout<< "bzlup"<<loops<<"0us time:" << (double)t2.tv_sec + (double)t2.tv_nsec/SEC <<std::endl;
+	  clock_gettime(CLOCK_REALTIME,&tbz);
+	  clock_gettime(CLOCK_REALTIME,&tnow);
+	  while ( (ret=getUSBPackets(&device0)) == -EBUSY && loops < 10)
+	  {
+		  tbz.tv_nsec+=10*US; //Update timer count for next clock interrupt
+		  tsnorm(&tbz);
+		  clock_nanosleep(0, TIMER_ABSTIME, &tbz, NULL);
+		  loops++;
+	  }
+	  clock_gettime(CLOCK_REALTIME,&t2);
+	  t2 = tsSubtract(t2, tnow);
+	  if (loops!=0)
+		  std::cout<< "bzlup"<<loops<<"0us time:" << (double)t2.tv_sec + (double)t2.tv_nsec/SEC <<std::endl;
 
-      //Run Safety State Machine
-      stateMachine(&device0, &currParams, &rcvdParams);
+	  //Run Safety State Machine
+	  stateMachine(&device0, &currParams, &rcvdParams);
 
-      //Update Atmel Input Pins
-      // TODO: deleteme
-      updateAtmelInputs(device0, currParams.runlevel);
+	  //Update Atmel Input Pins
+	  // TODO: deleteme
+	  updateAtmelInputs(device0, currParams.runlevel);
 
-      //Get state updates from master
-      if ( checkLocalUpdates() == TRUE)
-	updateDeviceState(&currParams, getRcvdParams(&rcvdParams), &device0);
-      else
-	rcvdParams.runlevel = currParams.runlevel;
+	  //Get state updates from master
+	  if ( checkLocalUpdates() == TRUE)
+		  updateDeviceState(&currParams, getRcvdParams(&rcvdParams), &device0);
+	  else
+		  rcvdParams.runlevel = currParams.runlevel;
 
-      //Clear DAC Values (set current_cmd to zero on all joints)
-      clearDACs(&device0);
+	  //Clear DAC Values (set current_cmd to zero on all joints)
+	  clearDACs(&device0);
 
-      //////////////// SURGICAL ROBOT CODE //////////////////////////
-      if (deviceType == SURGICAL_ROBOT)
-        {
-	  // Calculate Raven control
-	  controlRaven(&device0, &currParams);
-        }
-      //////////////// END SURGICAL ROBOT CODE ///////////////////////////
+	  //////////////// SURGICAL ROBOT CODE //////////////////////////
+	  if (deviceType == SURGICAL_ROBOT)
+	  {
+		  // Calculate Raven control
+		  controlRaven(&device0, &currParams);
+	  }
+	  //////////////// END SURGICAL ROBOT CODE ///////////////////////////
 
-      // Check for overcurrent and impose safe torque limits
-      if (overdriveDetect(&device0, currParams.runlevel))
-        {
-	  soft_estopped = TRUE;
-	  showInverseKinematicsSolutions(&device0, currParams.runlevel);
-	  outputRobotState();
-        }
-      //Update Atmel Output Pins
-      updateAtmelOutputs(&device0, currParams.runlevel);
+	  // Check for overcurrent and impose safe torque limits
+	  if (overdriveDetect(&device0, currParams.runlevel))
+	  {
+		  soft_estopped = TRUE;
+		  showInverseKinematicsSolutions(&device0, currParams.runlevel);
+		  outputRobotState();
+	  }
+	  //Update Atmel Output Pins
+	  updateAtmelOutputs(&device0, currParams.runlevel);
 
-      //Fill USB Packet and send it out
-      putUSBPackets(&device0); //disable usb for par port test
+	  //Fill USB Packet and send it out
+	  putUSBPackets(&device0); //disable usb for par port test
 
-      //Publish current raven state
-      publish_ravenstate_ros(&device0,&currParams);   // from local_io
+	  //Publish current raven state
+	  publish_ravenstate_ros(&device0,&currParams);   // from local_io
 
-      //Done for this cycle
+	  //Publish smaller raven state less often
+	  if (message_loop % 20 == 0){
+		  publish_ravenlogging_ros(&device0,&currParams);   // from local_io
+		  message_loop = 0;
+	  }
+	  message_loop++;
+
+
+	  //Done for this cycle
     }
 
 

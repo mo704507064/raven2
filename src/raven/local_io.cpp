@@ -341,6 +341,7 @@ void setSurgeonMode(int pedalstate)
 ///
 #include <tf/transform_datatypes.h>
 #include <raven_2/raven_state.h>
+#include <raven_2/raven_logging.h>
 #include <raven_2/raven_automove.h>
 #include <visualization_msgs/Marker.h>
 #include <sensor_msgs/JointState.h>
@@ -350,9 +351,11 @@ void publish_joints(struct robot_device*);
 void publish_marker(struct robot_device*);
 void autoincrCallback(raven_2::raven_automove);
 
+
 using namespace raven_2;
 // Global publisher for raven data
 ros::Publisher pub_ravenstate;
+ros::Publisher pub_ravenlogging;
 ros::Subscriber sub_automove;
 ros::Publisher joint_publisher;
 ros::Publisher vis_pub1;
@@ -370,10 +373,10 @@ ros::Publisher vis_pub2;
 */
 int init_ravenstate_publishing(ros::NodeHandle &n){
     pub_ravenstate = n.advertise<raven_state>("ravenstate", 1 ); //, ros::TransportHints().unreliable().tcpNoDelay() );
+    pub_ravenlogging = n.advertise<raven_logging>("ravenlogging", 1 );
     joint_publisher = n.advertise<sensor_msgs::JointState>("joint_states", 1);
     vis_pub1 = n.advertise<visualization_msgs::Marker>( "visualization_marker1", 0 );
     vis_pub2 = n.advertise<visualization_msgs::Marker>( "visualization_marker2", 0 );
-
 
 	sub_automove = n.subscribe<raven_automove>("raven_automove", 1, autoincrCallback, ros::TransportHints().unreliable() );
 
@@ -437,7 +440,7 @@ void autoincrCallback(raven_2::raven_automove msg)
 */
 void publish_ravenstate_ros(struct robot_device *dev,struct param_pass *currParams){
     static int count=0;
-    static raven_state msg_ravenstate;  // satic variables to minimize memory allocation calls
+    static raven_state msg_ravenstate;  // static variables to minimize memory allocation calls
     static ros::Time t1;
     static ros::Time t2;
     static ros::Duration d;
@@ -502,7 +505,7 @@ void publish_ravenstate_ros(struct robot_device *dev,struct param_pass *currPara
         float f[6];
         j = dev->mech[i].type == GREEN_ARM ? 1 : 0;
         dev->mech[j].r2_jac.get_vel(vel);
-        dev->mech[j].r2_jac.get_vel(f);
+        dev->mech[j].r2_jac.get_force(f);
         for (int k=0; k<6; k++){
         	msg_ravenstate.jac_vel[j*6+k] = vel[k];
         	msg_ravenstate.jac_f[j*6+k] = f[k];
@@ -516,6 +519,91 @@ void publish_ravenstate_ros(struct robot_device *dev,struct param_pass *currPara
     // Publish the raven data to ROS
     pub_ravenstate.publish(msg_ravenstate);
 }
+
+/**
+* \brief Publishes the raven_logging message from the robot and currParams structures
+*
+*   \param dev robot device structure with the current state of the robot
+*   \param currParams the parameters being passed from the interfaces
+*  \ingroup ROS
+*/
+void publish_ravenlogging_ros(struct robot_device *dev,struct param_pass *currParams){
+    static int count=0;
+    static raven_logging msg_ravenlogging;  // static variables to minimize memory allocation calls
+    static ros::Time t1;
+    static ros::Time t2;
+    static ros::Duration d;
+
+    msg_ravenlogging.last_seq = currParams->last_sequence;
+
+    if (count == 0){
+        t1 = t1.now();
+    }
+    count ++;
+    t2 = t2.now();
+    d = t2-t1;
+
+//    if (d.toSec()<0.01)
+//        return;
+
+    msg_ravenlogging.dt=d;
+    t1=t2;
+
+
+    // Copy the robot state to the output datastructure.
+    int numdof=8;
+    int j;
+    for (int i=0; i<NUM_MECH; i++){
+    	j = dev->mech[i].type == GREEN_ARM ? 1 : 0;
+        msg_ravenlogging.type[j]    = dev->mech[j].type;
+        msg_ravenlogging.pos[j*3]   = dev->mech[j].pos.x;
+        msg_ravenlogging.pos[j*3+1] = dev->mech[j].pos.y;
+        msg_ravenlogging.pos[j*3+2] = dev->mech[j].pos.z;
+        msg_ravenlogging.pos_d[j*3]   = dev->mech[j].pos_d.x;
+        msg_ravenlogging.pos_d[j*3+1] = dev->mech[j].pos_d.y;
+        msg_ravenlogging.pos_d[j*3+2] = dev->mech[j].pos_d.z;
+        msg_ravenlogging.grasp_d[j] = (float)dev->mech[j].ori_d.grasp/1000;
+
+        for (int orii=0; orii<3; orii++)
+        {
+            for (int orij=0; orij<3; orij++)
+            {
+            	msg_ravenlogging.ori[j*9 + orii*3+orij] = dev->mech[j].ori.R[orii][orij];
+            }
+        }
+
+
+        for (int m=0; m<numdof; m++){
+            int jtype = dev->mech[j].joint[m].type;
+
+            msg_ravenlogging.tau[jtype]        = dev->mech[j].joint[m].tau_d;
+
+            msg_ravenlogging.jpos[jtype]       = dev->mech[j].joint[m].jpos RAD2DEG;
+
+
+            msg_ravenlogging.jpos_d[jtype]     = dev->mech[j].joint[m].jpos_d RAD2DEG;
+
+            msg_ravenlogging.dac_val[jtype]    = dev->mech[j].joint[m].current_cmd;
+        }
+
+        //grab jacobian velocities and forces
+        float f[6];
+        j = dev->mech[i].type == GREEN_ARM ? 1 : 0;
+
+        dev->mech[j].r2_jac.get_force(f);
+        for (int k=0; k<6; k++){
+        	msg_ravenlogging.jac_f[j*6+k] = f[k];
+        }
+    }
+//    msg_ravenstate.f_secs = d.toSec();
+    msg_ravenlogging.hdr.stamp = msg_ravenlogging.hdr.stamp.now();
+    msg_ravenlogging.runlevel=currParams->runlevel;
+    msg_ravenlogging.sublevel=currParams->sublevel;
+
+    // Publish the raven data to ROS
+    pub_ravenlogging.publish(msg_ravenlogging);
+}
+
 
 /**
 *  \brief Publishes the joint angles for the visualization

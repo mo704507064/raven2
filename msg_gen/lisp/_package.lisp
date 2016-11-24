@@ -5,5 +5,7 @@
    "RAVEN_AUTOMOVE"
    "<RAVEN_STATE>"
    "RAVEN_STATE"
+   "<RAVEN_LOGGING>"
+   "RAVEN_LOGGING"
   ))
 

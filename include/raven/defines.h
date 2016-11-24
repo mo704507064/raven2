@@ -42,7 +42,7 @@
 #define DV_ADAPTER			1
 //#define RICKS_TOOLS     //skips tool initialization //not supported since switch to tools.h?
 //#define SCISSOR_RIGHT
-//#define OPPOSE_GRIP
+#define OPPOSE_GRIP
 
 
 //~~~~~~~~~ USB Board definition ~~~~~~~~~~~~~~~~~~~
@@ -53,7 +53,7 @@
 
 
 //~~~~~~~~ Other settings, experts only ~~~~~~~~~~~~
-//#define NO_LPF    // This setting short circuits the Low Pass Filter in state_estimate.cpp
+#define NO_LPF    // This setting short circuits the Low Pass Filter in state_estimate.cpp
 //#define OMNI_GAIN  2  // Get a little more oomph out of the omni grasping button - sets a gain in local__io.cpp
 //#define ORIENTATION_V
 
@@ -205,7 +205,7 @@
 #define ELBOW_TR_GREEN_ARM    (float)( (PARTIAL_PULLEY_LINK2_RADIUS/CAPSTAN_LINK2_SMALL_RADIUS)  *  (CAPSTAN_LINK2_LARGE_RADIUS/CAPSTAN_RADIUS_GP42) * GEAR_BOX_GP42_TR) // RE-40, GP-42 // UNITLESS
 #define Z_INS_TR_GREEN_ARM    (float)( (1.0/((2*M_PI*CAPSTAN_RADIUS_GP42)/1000.0)) * GEAR_BOX_GP42_TR *2*M_PI) // UNITS: rad/meter  Note: 2pi cancels
 #define TOOL_ROT_TR_GREEN_ARM (float)( CAPSTAN_TOOL_RADIUS/CAPSTAN_RADIUS_GP32 * GEAR_BOX_GP32_TR * 120.0/180.0) // (asked 180, received 120)
-#define WRIST_TR_GREEN_ARM    (float)( CAPSTAN_TOOL_RADIUS/CAPSTAN_RADIUS_GP32 * GEAR_BOX_GP32_TR * 200.0/180.0) //  RE-30, GP-32  ( /180 is a fudge factor put in by HK through observation. Was 140/180
+#define WRIST_TR_GREEN_ARM    (float)( CAPSTAN_TOOL_RADIUS/CAPSTAN_RADIUS_GP32 * GEAR_BOX_GP32_TR * 200.0/180.0) //  RE-30, GP-32  (200/180 is a fudge factor put in by HK through observation. Was 140/180
 #define GRASP1_TR_GREEN_ARM   (float)( CAPSTAN_TOOL_RADIUS/CAPSTAN_RADIUS_GP32 * GEAR_BOX_GP32_TR * 100.0/90.0) //  RE-30, GP-32 (100/90 is a fudge factor put in by HK through observation. Was 75/90
 #define GRASP2_TR_GREEN_ARM   (float)( CAPSTAN_TOOL_RADIUS/CAPSTAN_RADIUS_GP32 * GEAR_BOX_GP32_TR * 100.0/90.0) //  RE-30, GP-32
 
@@ -315,7 +315,7 @@
 
 // Our choice of the safety level and policy for RAVEN teleoperation
 #define SAFETY_POLICY	SOFT_REGULATION // User can change this! (this value is used in overdrive_detect.cpp)
-#define SAFETY_LEVEL	BEGINNER_MODE 	// User can change this! (this value is used in init.cpp)
+#define SAFETY_LEVEL	MODERATE_MODE //BEGINNER_MODE 	// User can change this! (this value is used in init.cpp)
 
 
 

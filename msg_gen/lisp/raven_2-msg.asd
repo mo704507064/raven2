@@ -10,4 +10,6 @@
     (:file "_package_raven_automove" :depends-on ("_package"))
     (:file "raven_state" :depends-on ("_package_raven_state"))
     (:file "_package_raven_state" :depends-on ("_package"))
+    (:file "raven_logging" :depends-on ("_package_raven_logging"))
+    (:file "_package_raven_logging" :depends-on ("_package"))
   ))

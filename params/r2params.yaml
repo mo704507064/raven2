@@ -5,8 +5,8 @@
 #     Position axes are 1-3.  4th is not used.  5-8 are tool axes.
 #
 gains_gold_kp:
-- 0.300
-- 0.300
+- 0.200
+- 0.200
 - 0.150
 - 0.00
 - 0.09
@@ -24,8 +24,8 @@ gains_gold_kd:
 - 0.00
 
 gains_green_kp:
-- 0.300
-- 0.300
+- 0.200
+- 0.200
 - 0.150
 - 0.00
 - 0.09

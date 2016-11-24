@@ -153,7 +153,6 @@ int r2_jacobian::update_r2_jacobian(float j_pos[6], float j_vel[6], float j_torq
  */
 int r2_jacobian::calc_velocities(float j_vel[6]){
 	int success = 0;
-
 	Eigen::VectorXf j_vel_vec(6);
 
 	for(int i = 0; i < 6; i++){
@@ -177,13 +176,20 @@ int r2_jacobian::calc_velocities(float j_vel[6]){
 int r2_jacobian::calc_forces(float j_torques[6]){
 	int success = 0;
 
+	Eigen::MatrixXf j_t;
+	Eigen::MatrixXf j_t_inv;
 	Eigen::VectorXf j_torques_vec(6);
 
 	for(int i = 0; i < 6; i++){
 		j_torques_vec(i) = j_torques[i];
 	}
 
-	force = j_matrix.transpose().inverse() * j_torques_vec;//j_matrix * j_torques_vec;
+	j_t = j_matrix;
+	j_t = j_t.transpose();
+	j_t_inv = j_t.inverse();
+
+	force = j_torques_vec;
+	//force = j_t_inv * j_torques_vec;//j_matrix * j_torques_vec;
 
 	return success;
 }
@@ -210,27 +216,28 @@ int r2_device_jacobian(struct robot_device *d0, int runlevel){
 	int arm_type;
 	int offset = 0;
 	tool m_tool;
-
+	struct DOF* _joint;
 
 	for (int m=0; m<NUM_MECH; m++){
 		//populate arrays for updating jacobian
 		for (int i = 0; i < 6; i++){
+			_joint = &d0->mech[m].joint[i+offset];
 			offset = (i >= 3) ? 1 : 0; //skip getting tau for 4, since it is unpopulated
 
-			j_pos[i] = d0->mech[m].joint[i+offset].jpos;
-			j_vel[i] = d0->mech[m].joint[i+offset].jvel;
+			j_pos[i] = _joint->jpos;
+			j_vel[i] = _joint->jvel;
 
 			//we really care about the joint torque applied beyond the gravity torque
 			if (i < 3){
 				//capstan torque for the first 3 joints is already calculated
-				grav_t = d0->mech[m].joint[i+offset].tau_g;
+				grav_t = _joint->tau_g;
 			}
 			else
 				//we haven't calculated gravity torques on the tool joints yet - probably unnecessary?
 				grav_t = 0;
 
 			//grab the applied capstan torque
-			applied_t =  d0->mech[m].joint[i+offset].tau;
+			applied_t =  _joint->tau;
 
 //			printf("forces check! \n");
 //			if((i==0) and (check % 1000 == 0))std::cout<<grav_t<<",  "<<applied_t<<std::endl;
@@ -239,7 +246,7 @@ int r2_device_jacobian(struct robot_device *d0, int runlevel){
 			//and populate the output array
 
 			double gearbox = (i < 3) ? GEAR_BOX_GP42_TR : GEAR_BOX_GP32_TR; //use the big gearbox for the first 3 joints
-			j_torque[i] = (applied_t - grav_t)  * DOF_types[i+offset].TR / gearbox; // t_joint = t_capstan * (torque transfer ratio / Gear box ratio)
+			j_torque[i] = (applied_t - grav_t) * DOF_types[i+offset].TR / gearbox; // t_joint = t_capstan * (torque transfer ratio / Gear box ratio)
 
 		}
 

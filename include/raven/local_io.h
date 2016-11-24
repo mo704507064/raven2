@@ -52,6 +52,7 @@ void updateMasterRelativeOrigin(struct device *device0);
 
 int init_ravenstate_publishing(ros::NodeHandle &n);
 void publish_ravenstate_ros(struct robot_device*, struct param_pass*);
+void publish_ravenlogging_ros(struct robot_device *dev,struct param_pass *currParams);
 void setSurgeonMode(int pedalstate);
 
 #endif
